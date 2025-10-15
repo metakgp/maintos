@@ -119,6 +119,11 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
         .await?;
 
     if response.status() != StatusCode::OK {
+        tracing::error!(
+            "Github OAuth error getting username: {}",
+            response.text().await?
+        );
+
         return Err("Github API response error.".into());
     }
 
@@ -143,6 +148,12 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
         302 => Err("Error: Github API token is from a non-organization member.".into()),
         404 => Ok(None),
         204 => Ok(Some(generate_token(&username, env_vars).await?)),
-        _ => Err("Github API response error.".into()),
+        code => {
+            tracing::error!(
+                "Error getting org membership data ({code}): {}",
+                response.text().await?
+            );
+            Err("Github API response error.".into())
+        }
     }
 }

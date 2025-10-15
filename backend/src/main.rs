@@ -1,4 +1,5 @@
 use clap::Parser;
+use tracing_subscriber::prelude::*;
 
 use crate::utils::Res;
 
@@ -17,11 +18,16 @@ async fn main() -> Res<()> {
     // Parse environment variables
     let env_vars = env::EnvVars::parse();
 
+    // Tracing (log) config
+    let subscriber = tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer().with_writer(std::io::stdout));
+    tracing::subscriber::set_global_default(subscriber)?;
+
     // Server
     let listener =
         tokio::net::TcpListener::bind(format!("0.0.0.0:{}", env_vars.server_port)).await?;
+    tracing::info!("Starting server on port {}", env_vars.server_port);
     axum::serve(listener, routing::get_router(&env_vars)).await?;
-    println!("Server listening on port {}", env_vars.server_port);
 
     Ok(())
 }

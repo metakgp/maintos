@@ -9,7 +9,10 @@ use axum::{
 };
 use http::{HeaderValue, Method, header::ToStrError};
 use serde::Serialize;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::{
+    cors::{Any, CorsLayer},
+    trace::{self, TraceLayer},
+};
 
 use crate::{env::EnvVars, routing::middleware::verify_jwt_middleware};
 
@@ -32,6 +35,11 @@ pub fn get_router(env_vars: &EnvVars) -> axum::Router {
         .route("/healthcheck", axum::routing::get(handlers::healthcheck))
         .layer(DefaultBodyLimit::max(2 << 20))
         .with_state(state)
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(trace::DefaultMakeSpan::new().level(tracing::Level::INFO))
+                .on_response(trace::DefaultOnResponse::new().level(tracing::Level::INFO)),
+        )
         .layer(
             CorsLayer::new()
                 .allow_headers(Any)
@@ -129,6 +137,8 @@ impl<T: Serialize> IntoResponse for BackendResponse<T> {
 pub(super) struct AppError(Box<dyn Error>);
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
+    	tracing::error!("An error occured: {}", self.0);
+
         BackendResponse::<()>::error(
             "An internal server error occured. Please try again later.".into(),
             StatusCode::INTERNAL_SERVER_ERROR,
