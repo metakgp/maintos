@@ -142,7 +142,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
     match response.status().as_u16() {
         302 => Err("Error: Github API token is from a non-organization member.".into()),
         404 => Ok(None),
-        202 => Ok(Some(generate_token(&username, env_vars).await?)),
+        204 => Ok(Some(generate_token(&username, env_vars).await?)),
         _ => Err("Github API response error.".into()),
     }
 }
