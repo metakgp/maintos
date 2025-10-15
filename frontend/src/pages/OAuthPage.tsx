@@ -16,7 +16,7 @@ export default function OAuthPage() {
 		if (response.status === 'success') {
 			if ("token" in response.data) {
 				auth.login(response.data["token"]);
-				navigate('/admin');
+				navigate('/');
 			}
 			else {
 				setMessage("Authentication failed.");
@@ -30,7 +30,7 @@ export default function OAuthPage() {
 
 	useEffect(() => {
 		if (auth.isAuthenticated) {
-			navigate('/admin');
+			navigate('/');
 		} else {
 			const urlParams = new URLSearchParams(location.search);
 
