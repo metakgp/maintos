@@ -1,0 +1,83 @@
+@use "./_variables" as *;
+@forward "./_reset";
+
+// Globally used styles below. Styles for a particular page or component are in separate files.
+
+body {
+	display: flex;
+	font-family: "Hanken Grotesk", sans-serif;
+
+	color: $fg-color;
+	background-color: $bg-color;
+
+	scrollbar-gutter: stable;
+
+	&::-webkit-scrollbar-track {
+		background-color: rgba($bg-color, 0.5);
+		border-radius: 100px;
+	}
+
+	&::-webkit-scrollbar {
+		width: 8px;
+		background-color: rgba($bg-color, 0.5);
+	}
+
+	&::-webkit-scrollbar-thumb {
+		background-color: rgba($fg-color, 0.4);
+		border-radius: 100px;
+	}
+
+	#root {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+		.meta-footer {
+			width: 100%;
+			text-align: center;
+
+			margin-top: auto;
+			margin-bottom: 10px;
+		}
+	}
+}
+
+a {
+	color: $accent-color-lighter;
+	text-decoration: none;
+
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+.icon-btn {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
+input,
+select,
+.select {
+	width: 100%;
+	padding: 8px 10px;
+	outline: none;
+	margin-bottom: 1rem;
+	border: 1px solid rgba($fg-color, 0.5);
+	border-radius: 5px;
+	box-sizing: border-box;
+	font-family: "Hanken Grotesk", sans-serif;
+	font-size: 1rem;
+
+	background-color: $surface-1;
+	color: $fg-color;
+}
+
+.toast {
+	background-color: $surface-2 !important;
+	color: $fg-color !important;
+	fill: $fg-color !important;
+
+	border-radius: 10px !important;
+}
