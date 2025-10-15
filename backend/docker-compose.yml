@@ -1,0 +1,29 @@
+services:
+  iqps-backend:
+    image: metakgporg/maintos-backend
+    container_name: maintos-backend
+    build: .
+    restart: always
+    env_file:
+      - .env
+    networks:
+      metaploy-network:
+        aliases:
+          - maintos-backend
+    volumes:
+      - nginx-config-volume:/etc/nginx/sites-enabled
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "30m"
+        max-file: "3"
+
+networks:
+  metaploy-network:
+    external: true
+    name: metaploy-network
+
+volumes:
+  nginx-config-volume:
+    external: true
+    name: metaploy-nginx-config-volume
