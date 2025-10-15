@@ -2,6 +2,8 @@
 //!
 //!  Each field in the struct `EnvVars` corresponds to an environment variable. The environment variable name will be in all capitals. The default values are set using the `arg()` macro of the `clap` crate. Check the source code for the defaults.
 
+use std::path::PathBuf;
+
 use clap::Parser;
 use hmac::{digest::InvalidLength, Hmac, Mac};
 use sha2::Sha256;
@@ -24,6 +26,11 @@ pub struct EnvVars {
     #[arg(env, default_value = "")]
     /// Github organization name
     pub gh_org_name: String,
+
+    // Config
+    #[arg(env, default_value = "/deployments")]
+    /// Directory in which all the project deployments are stored
+    pub deployments_dir: PathBuf,
 
     // Server
     #[arg(env, default_value = "8080")]
