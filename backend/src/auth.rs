@@ -138,7 +138,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
         .send()
         .await?;
 
-    // See API: https://docs.github.com/en/enterprise-server@3.17/rest/orgs/members?apiVersion=2022-11-28#check-organization-membership-for-a-user
+    // See API: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#check-organization-membership-for-a-user
     match response.status().as_u16() {
         302 => Err("Error: Github API token is from a non-organization member.".into()),
         404 => Ok(None),
