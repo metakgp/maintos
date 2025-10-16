@@ -1,10 +1,13 @@
 //! Router, [`handlers`], [`middleware`], state, and response utils.
 
+use std::sync::Arc;
+
 use axum::{
     extract::{DefaultBodyLimit, Json},
     http::StatusCode,
     response::IntoResponse,
 };
+use bollard::Docker;
 use http::{HeaderValue, Method};
 use serde::Serialize;
 use tower_http::{
@@ -18,10 +21,11 @@ mod handlers;
 mod middleware;
 
 /// Returns the Axum router for IQPS
-pub fn get_router(env_vars: &EnvVars) -> axum::Router {
-    let state = RouterState {
+pub fn get_router(env_vars: &EnvVars, docker: Arc<Docker>) -> axum::Router {
+    let state = Arc::new(RouterState {
         env_vars: env_vars.clone(),
-    };
+        docker,
+    });
 
     axum::Router::new()
         .route("/profile", axum::routing::get(handlers::profile))
@@ -61,6 +65,7 @@ pub fn get_router(env_vars: &EnvVars) -> axum::Router {
 /// The state of the axum router, containing the environment variables and the database connection.
 struct RouterState {
     pub env_vars: EnvVars,
+    pub docker: Arc<Docker>,
 }
 
 #[derive(Clone, Copy)]

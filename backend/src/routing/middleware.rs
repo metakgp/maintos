@@ -1,5 +1,7 @@
 //! Middleware for the axum router
 
+use std::sync::Arc;
+
 use axum::{
     extract::{Request, State},
     middleware::Next,
@@ -13,7 +15,7 @@ use super::{AppError, BackendResponse, RouterState};
 
 /// Verifies the JWT and authenticates a user. If the JWT is invalid, the user is sent an unauthorized status code. If the JWT is valid, the authentication is added to the state.
 pub async fn verify_jwt_middleware(
-    State(state): State<RouterState>,
+    State(state): State<Arc<RouterState>>,
     headers: HeaderMap,
     mut request: Request,
     next: Next,
