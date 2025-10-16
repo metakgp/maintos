@@ -104,6 +104,10 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
         .await?;
 
     if response.status() != StatusCode::OK {
+        tracing::error!(
+            "Github OAuth error getting access token: {}",
+            response.text().await?
+        );
         return Err("Github API response error.".into());
     }
 
