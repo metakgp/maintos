@@ -11,6 +11,7 @@ import { makeRequest } from "./backend";
 interface IAuthContext {
 	isAuthenticated: boolean;
 	jwt: string | null;
+	username: string | null;
 	login: (jwt: string) => void;
 	logout: () => void;
 }
@@ -18,6 +19,7 @@ interface IAuthContext {
 const DEFAULT_AUTH_CONTEXT: IAuthContext = {
 	isAuthenticated: false,
 	jwt: null,
+	username: null,
 	login: () => { },
 	logout: () => { }
 };
@@ -37,23 +39,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [isAuthenticated, setIsAuthenticated] = useState(
 		lsAuthJwt !== null && lsAuthJwt !== "",
 	);
+	const [username, setUsername] = useState<string | null>(null);
 
-	const login = (jwt: string) => {
+	const login = async (jwt: string) => {
 		localStorage.setItem("jwt", jwt);
-		setIsAuthenticated(true);
+		await checkAuth(jwt);
 	};
 
 	const logout = () => {
 		localStorage.removeItem("jwt");
 		setIsAuthenticated(false);
+		setUsername(null);
 		navigate('/');
 	};
 
 	const checkAuth = async (jwt: string) => {
 		const response = await makeRequest('profile', 'get', null, jwt);
+
 		if (response.status !== 'success') {
 			localStorage.removeItem("jwt");
 			setIsAuthenticated(false);
+		} else {
+			setUsername(response.data.username);
+			setIsAuthenticated(true);
 		}
 	}
 	useEffect(() => {
@@ -66,10 +74,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		() => ({
 			isAuthenticated,
 			jwt: lsAuthJwt,
+			username: username,
 			login,
 			logout
 		}),
-		[isAuthenticated, login, logout],
+		[isAuthenticated, username, login, logout],
 	);
 
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
