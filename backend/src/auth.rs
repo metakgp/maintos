@@ -3,7 +3,7 @@
 //! Currently this is only used in the admin dashboard and uses Github OAuth for authentication
 
 use std::collections::BTreeMap;
-
+use anyhow::anyhow;
 use http::StatusCode;
 use jwt::{Claims, RegisteredClaims, SignWithKey, VerifyWithKey};
 use serde::Deserialize;
@@ -24,12 +24,12 @@ pub async fn verify_token(token: &str, env_vars: &EnvVars) -> Res<Auth> {
     let jwt_key = env_vars.get_jwt_key()?;
     let claims: Result<Claims, _> = token.verify_with_key(&jwt_key);
 
-    let claims = claims.map_err(|_| "Claims not found on the JWT.")?;
+    let claims = claims.map_err(|_| anyhow!("Claims not found on the JWT."))?;
     let username = claims
         .private
         .get("username")
-        .ok_or("Username not in the claims.")?;
-    let username = username.as_str().ok_or("Username is not a string.")?;
+        .ok_or("Username not in the claims.").map_err(|_| anyhow!("Username not in the claims."))?;
+    let username = username.as_str().ok_or("Username is not a string.").map_err(|_| anyhow!("Username is not a string."))?;
 
     Ok(Auth {
         jwt: token.to_owned(),
@@ -43,9 +43,9 @@ async fn generate_token(username: &str, env_vars: &EnvVars) -> Res<String> {
 
     let expiration = chrono::Utc::now()
         .checked_add_days(chrono::naive::Days::new(7))
-        .ok_or("Error checking JWT expiration date")? // 7 Days expiration
+        .ok_or("Error checking JWT expiration date").map_err(|_| anyhow!("Error setting JWT expiry date."))?
         .timestamp()
-        .unsigned_abs();
+        .unsigned_abs(); // 7 Days expiration
 
     let mut private_claims = BTreeMap::new();
     private_claims.insert(
@@ -108,7 +108,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
             "Github OAuth error getting access token: {}",
             response.text().await?
         );
-        return Err("Github API response error.".into());
+        return Err(anyhow!("Github API response error."));
     }
 
     let access_token =
@@ -128,7 +128,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
             response.text().await?
         );
 
-        return Err("Github API response error.".into());
+        return Err(anyhow!("Github API response error."));
     }
 
     let username = serde_json::from_slice::<GithubUserResponse>(&response.bytes().await?)?.login;
@@ -149,7 +149,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
 
     // See API: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#check-organization-membership-for-a-user
     match response.status().as_u16() {
-        302 => Err("Error: Github API token is from a non-organization member.".into()),
+        302 => Err(anyhow!("Error: Github API token is from a non-organization member.")),
         404 => Ok(None),
         204 => Ok(Some(generate_token(&username, env_vars).await?)),
         code => {
@@ -157,7 +157,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
                 "Error getting org membership data ({code}): {}",
                 response.text().await?
             );
-            Err("Github API response error.".into())
+            Err(anyhow!("Github API response error."))
         }
     }
 }

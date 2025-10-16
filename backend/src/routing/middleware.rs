@@ -1,7 +1,5 @@
 //! Middleware for the axum router
 
-use std::sync::Arc;
-
 use axum::{
     extract::{Request, State},
     middleware::Next,
@@ -13,9 +11,12 @@ use crate::auth;
 
 use super::{AppError, BackendResponse, RouterState};
 
+
 /// Verifies the JWT and authenticates a user. If the JWT is invalid, the user is sent an unauthorized status code. If the JWT is valid, the authentication is added to the state.
+
+
 pub async fn verify_jwt_middleware(
-    State(state): State<Arc<RouterState>>,
+    State(state): State<RouterState>,
     headers: HeaderMap,
     mut request: Request,
     next: Next,
@@ -33,20 +34,20 @@ pub async fn verify_jwt_middleware(
                     "Authorization token invalid.".into(),
                     StatusCode::UNAUTHORIZED,
                 )
-                .into_response())
+                    .into_response())
             }
         } else {
             Ok(BackendResponse::<()>::error(
                 "Authorization header format invalid.".into(),
                 StatusCode::UNAUTHORIZED,
             )
-            .into_response())
+                .into_response())
         }
     } else {
         Ok(BackendResponse::<()>::error(
             "Authorization header missing.".into(),
             StatusCode::UNAUTHORIZED,
         )
-        .into_response())
+            .into_response())
     }
 }

@@ -4,7 +4,6 @@
 //!
 //! The request format is described
 
-use std::sync::Arc;
 
 use axum::extract::State;
 use axum::{Extension, extract::Json, http::StatusCode};
@@ -39,7 +38,7 @@ pub struct OAuthRes {
 ///
 /// Request format - [`OAuthReq`]
 pub async fn oauth(
-    State(state): State<Arc<RouterState>>,
+    State(state): State<RouterState>,
     Json(body): Json<OAuthReq>,
 ) -> HandlerReturn<OAuthRes> {
     if let Some(token) = auth::authenticate_user(&body.code, &state.env_vars).await? {
@@ -54,6 +53,7 @@ pub async fn oauth(
         ))
     }
 }
+
 
 #[derive(Serialize)]
 /// The response format for the user profile endpoint

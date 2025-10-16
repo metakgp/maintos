@@ -1,36 +1,35 @@
 //! Router, [`handlers`], [`middleware`], state, and response utils.
 
-use std::{error::Error, sync::Arc};
 
 use axum::{
     extract::{DefaultBodyLimit, Json},
     http::StatusCode,
     response::IntoResponse,
 };
-use http::{HeaderValue, Method, header::ToStrError};
+use http::{HeaderValue, Method};
 use serde::Serialize;
 use tower_http::{
     cors::{Any, CorsLayer},
     trace::{self, TraceLayer},
 };
 
-use crate::{env::EnvVars, routing::middleware::verify_jwt_middleware};
+use crate::{env::EnvVars};
 
 mod handlers;
 mod middleware;
 
 /// Returns the Axum router for IQPS
 pub fn get_router(env_vars: &EnvVars) -> axum::Router {
-    let state = Arc::new(RouterState {
+    let state = RouterState {
         env_vars: env_vars.clone(),
-    });
+    };
 
     axum::Router::new()
-        // .route("/profile", axum::routing::get(handlers::profile))
-        // .route_layer(axum::middleware::from_fn_with_state(
-        //     state.clone(),
-        //     verify_jwt_middleware,
-        // ))
+        .route("/profile", axum::routing::get(handlers::profile))
+        .route_layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            middleware::verify_jwt_middleware,
+        ))
         .route("/oauth", axum::routing::post(handlers::oauth))
         .route("/healthcheck", axum::routing::get(handlers::healthcheck))
         .layer(DefaultBodyLimit::max(2 << 20))
@@ -134,27 +133,24 @@ impl<T: Serialize> IntoResponse for BackendResponse<T> {
 }
 
 /// A struct representing the error returned by a handler. This is automatically serialized into JSON and sent as an internal server error (500) backend response. The `?` operator can be used anywhere inside a handler to do so.
-pub(super) struct AppError(Box<dyn Error>);
+pub(super) struct AppError(anyhow::Error);
 impl IntoResponse for AppError {
     fn into_response(self) -> axum::response::Response {
-    	tracing::error!("An error occured: {}", self.0);
+        tracing::error!("An error occured: {}", self.0);
 
         BackendResponse::<()>::error(
             "An internal server error occured. Please try again later.".into(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
-        .into_response()
+            .into_response()
     }
 }
 
-impl From<Box<dyn Error>> for AppError {
-    fn from(value: Box<dyn Error>) -> Self {
-        Self(value)
-    }
-}
-
-impl From<ToStrError> for AppError {
-    fn from(value: ToStrError) -> Self {
-        Self(value.to_string().into())
+impl<E> From<E> for AppError
+where
+    E: Into<anyhow::Error>,
+{
+    fn from(err: E) -> Self {
+        Self(err.into())
     }
 }
