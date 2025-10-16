@@ -5,7 +5,7 @@
 use std::path::PathBuf;
 
 use clap::Parser;
-use hmac::{digest::InvalidLength, Hmac, Mac};
+use hmac::{Hmac, Mac, digest::InvalidLength};
 use sha2::Sha256;
 
 #[derive(Parser, Clone)]

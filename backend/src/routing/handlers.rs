@@ -4,7 +4,6 @@
 //!
 //! The request format is described
 
-
 use axum::extract::State;
 use axum::{Extension, extract::Json, http::StatusCode};
 use serde::Deserialize;
@@ -53,7 +52,6 @@ pub async fn oauth(
         ))
     }
 }
-
 
 #[derive(Serialize)]
 /// The response format for the user profile endpoint

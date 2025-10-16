@@ -1,6 +1,5 @@
 //! Router, [`handlers`], [`middleware`], state, and response utils.
 
-
 use axum::{
     extract::{DefaultBodyLimit, Json},
     http::StatusCode,
@@ -13,7 +12,7 @@ use tower_http::{
     trace::{self, TraceLayer},
 };
 
-use crate::{env::EnvVars};
+use crate::env::EnvVars;
 
 mod handlers;
 mod middleware;
@@ -142,7 +141,7 @@ impl IntoResponse for AppError {
             "An internal server error occured. Please try again later.".into(),
             StatusCode::INTERNAL_SERVER_ERROR,
         )
-            .into_response()
+        .into_response()
     }
 }
 

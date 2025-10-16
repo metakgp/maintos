@@ -2,11 +2,11 @@
 //!
 //! Currently this is only used in the admin dashboard and uses Github OAuth for authentication
 
-use std::collections::BTreeMap;
 use anyhow::anyhow;
 use http::StatusCode;
 use jwt::{Claims, RegisteredClaims, SignWithKey, VerifyWithKey};
 use serde::Deserialize;
+use std::collections::BTreeMap;
 
 use crate::{env::EnvVars, utils::Res};
 
@@ -28,8 +28,12 @@ pub async fn verify_token(token: &str, env_vars: &EnvVars) -> Res<Auth> {
     let username = claims
         .private
         .get("username")
-        .ok_or("Username not in the claims.").map_err(|_| anyhow!("Username not in the claims."))?;
-    let username = username.as_str().ok_or("Username is not a string.").map_err(|_| anyhow!("Username is not a string."))?;
+        .ok_or("Username not in the claims.")
+        .map_err(|_| anyhow!("Username not in the claims."))?;
+    let username = username
+        .as_str()
+        .ok_or("Username is not a string.")
+        .map_err(|_| anyhow!("Username is not a string."))?;
 
     Ok(Auth {
         jwt: token.to_owned(),
@@ -43,7 +47,8 @@ async fn generate_token(username: &str, env_vars: &EnvVars) -> Res<String> {
 
     let expiration = chrono::Utc::now()
         .checked_add_days(chrono::naive::Days::new(7))
-        .ok_or("Error checking JWT expiration date").map_err(|_| anyhow!("Error setting JWT expiry date."))?
+        .ok_or("Error checking JWT expiration date")
+        .map_err(|_| anyhow!("Error setting JWT expiry date."))?
         .timestamp()
         .unsigned_abs(); // 7 Days expiration
 
@@ -79,11 +84,6 @@ struct GithubUserResponse {
     login: String,
 }
 
-#[derive(Deserialize)]
-struct GithubMembershipResponse {
-    state: String,
-}
-
 /// Takes a Github OAuth code and creates a JWT authentication token for the user
 /// 1. Uses the OAuth code to get an access token.
 /// 2. Uses the access token to get the user's username.
@@ -117,7 +117,7 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
     // Get the username of the user who made the request
     let response = client
         .get("https://api.github.com/user")
-        .header("Authorization", format!("Bearer {}", access_token))
+        .header("Authorization", format!("Bearer {access_token}"))
         .header("User-Agent", "bruh") // Why is this required :ded:
         .send()
         .await?;
@@ -149,7 +149,9 @@ pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<
 
     // See API: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#check-organization-membership-for-a-user
     match response.status().as_u16() {
-        302 => Err(anyhow!("Error: Github API token is from a non-organization member.")),
+        302 => Err(anyhow!(
+            "Error: Github API token is from a non-organization member."
+        )),
         404 => Ok(None),
         204 => Ok(Some(generate_token(&username, env_vars).await?)),
         code => {
