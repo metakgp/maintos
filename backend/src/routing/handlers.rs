@@ -12,11 +12,15 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::auth::{self, Auth};
+use crate::utils::{Deployment, get_deployments};
 
 use super::{AppError, BackendResponse, RouterState};
 
 /// The return type of a handler function. T is the data type returned if the operation was a success
 type HandlerReturn<T> = Result<(StatusCode, BackendResponse<T>), AppError>;
+
+/// Type of the State in the handler arguments
+type HandlerState = State<Arc<RouterState>>;
 
 /// Healthcheck route. Returns a `Hello World.` message if healthy.
 pub async fn healthcheck() -> HandlerReturn<()> {
@@ -39,7 +43,7 @@ pub struct OAuthRes {
 ///
 /// Request format - [`OAuthReq`]
 pub async fn oauth(
-    State(state): State<Arc<RouterState>>,
+    State(state): HandlerState,
     Json(body): Json<OAuthReq>,
 ) -> HandlerReturn<OAuthRes> {
     if let Some(token) = auth::authenticate_user(&body.code, &state.env_vars).await? {
@@ -70,5 +74,13 @@ pub async fn profile(Extension(auth): Extension<Auth>) -> HandlerReturn<ProfileR
             token: auth.jwt,
             username: auth.username,
         },
+    ))
+}
+
+/// Returns a list of all deployments
+pub async fn deployments(State(state): HandlerState) -> HandlerReturn<Vec<Deployment>> {
+    Ok(BackendResponse::ok(
+        "Successfully fetched deployments".into(),
+        get_deployments(&state.env_vars).await?,
     ))
 }
