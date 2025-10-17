@@ -15,21 +15,27 @@ export interface IErrorResponse {
 
 export type BackendResponse<T> = IOkResponse<T> | IErrorResponse;
 
-
 export interface IEndpointTypes {
 	oauth: {
 		request: {
-			code: string
-		},
+			code: string;
+		};
 		response: {
-			token: string
-		}
-	},
+			token: string;
+		};
+	};
 	profile: {
 		request: null;
 		response: {
 			username: string;
 			token: string;
-		}
-	},
+		};
+	};
+	deployments: {
+		request: null;
+		response: {
+			name: string;
+			repo_url: string;
+		}[];
+	};
 }
