@@ -36,7 +36,6 @@ pub fn get_router(env_vars: &EnvVars, docker: Arc<Docker>) -> axum::Router {
         ))
         .route("/oauth", axum::routing::post(handlers::oauth))
         .route("/healthcheck", axum::routing::get(handlers::healthcheck))
-        .layer(DefaultBodyLimit::max(2 << 20))
         .with_state(state)
         .layer(
             TraceLayer::new_for_http()

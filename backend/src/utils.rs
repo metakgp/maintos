@@ -23,8 +23,6 @@ pub async fn get_deployments(env_vars: &EnvVars) -> Res<Vec<Deployment>> {
     let mut dir_iter = fs::read_dir(deployments_dir).await?;
     while let Some(path) = dir_iter.next_entry().await? {
         if path.file_type().await?.is_dir() {
-            println!("{:?}", path);
-
             if let Ok(repo) = Repository::open(path.path()) {
                 let name = path
                     .file_name()
