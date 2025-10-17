@@ -29,16 +29,17 @@ function DeploymentsGrid() {
 	}, []);
 
 	return (
-		<div className="deployments-grid">
-			<p>{message}</p>
-			{
-				deployments.map(
-					(deployment) => <div className="deployment-card">
-						<p>{deployment.name}</p>
-						<p>Repo: {deployment.repo_url}</p>
-					</div>
-				)
-			}
+		<div className="deployments">
+			<p className="message"><i>{message}</i></p>
+			<div className="deployments-grid">
+				{
+					deployments.map(
+						(deployment) => <div className="deployment-card">
+							<a href={deployment.repo_url}>{deployment.name}</a>
+						</div>
+					)
+				}
+			</div>
 		</div>
 	);
 }

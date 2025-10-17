@@ -1,0 +1,33 @@
+@use "../../styles/variables" as *;
+
+.deployments {
+	margin: 0 5rem;
+
+	display: flex;
+	flex-direction: column;
+	justify-items: center;
+
+	.message {
+		text-align: center;
+		font-size: 1.2rem;
+	}
+}
+
+.deployments-grid {
+	display: grid;
+	grid-template-columns: auto auto auto auto auto;
+	justify-items: center;
+	gap: 0.5rem;
+
+	margin-top: 2rem;
+}
+
+.deployment-card {
+	display: flex;
+	flex-direction: column;
+	padding: 1rem;
+	width: 100%;
+
+	background-color: $surface-2;
+	border-radius: 5px;
+}
