@@ -16,6 +16,7 @@ export default function OAuthPage() {
 		if (response.status === 'success') {
 			if ("token" in response.data) {
 				auth.login(response.data["token"]);
+				setMessage("Successfully authenticated.");
 				navigate('/');
 			}
 			else {
@@ -30,13 +31,13 @@ export default function OAuthPage() {
 
 	useEffect(() => {
 		if (auth.isAuthenticated) {
+			setMessage("User already authenticated.");
 			navigate('/');
 		} else {
 			const urlParams = new URLSearchParams(location.search);
 
 			if (urlParams.get("code") === null) {
-				setMessage("No OAuth code found. Redirecting to home page in 5s.");
-				setTimeout(() => navigate("/"), 5000);
+				setMessage("No OAuth code found.");
 			} else if (!awaitingResponse) {
 				setAwaitingRepsonse(true);
 				loginHandler(urlParams.get("code") as string);
