@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { HashRouter, Route, Routes } from "react-router-dom"
 import { AuthProvider } from "./utils/auth"
 import OAuthPage from "./pages/OAuthPage"
 import MainPage from "./pages/MainPage"
@@ -6,7 +6,7 @@ import MainPage from "./pages/MainPage"
 function App() {
   return (
     <>
-      <BrowserRouter>
+      <HashRouter>
         <AuthProvider>
           <Routes>
             <Route
@@ -19,7 +19,7 @@ function App() {
             />
           </Routes>
         </AuthProvider>
-      </BrowserRouter>
+      </HashRouter>
     </>
   )
 }
