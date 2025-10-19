@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "frontend/**"
-      - ".github/workflows/deploy-gh-pages.yaml"
+      - ".github/workflows/deploy-gh-pages.yml"
 
 jobs:
   build:
