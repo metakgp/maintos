@@ -35,10 +35,8 @@ pub async fn get_access_token(
         return Err(anyhow!("Github API response error."));
     }
 
-    let access_token = response
-        .json::<GithubAccessTokenResponse>()
-        .await?
-        .access_token;
+    let access_token =
+        serde_json::from_slice::<GithubAccessTokenResponse>(&response.bytes().await?)?.access_token;
 
     Ok(access_token)
 }
@@ -65,7 +63,7 @@ pub async fn get_username(client: &Client, access_token: &str) -> Res<String> {
         return Err(anyhow!("Github API response error."));
     }
 
-    let username = response.json::<GithubUserResponse>().await?.login;
+    let username = serde_json::from_slice::<GithubUserResponse>(&response.bytes().await?)?.login;
     Ok(username)
 }
 
@@ -135,7 +133,8 @@ pub async fn get_collaborator_role(
 
     match response.status() {
         StatusCode::OK => {
-            let collab_role = response.json::<GithubCollabResponse>().await?.role_name;
+            let collab_role =
+                serde_json::from_slice::<GithubCollabResponse>(&response.bytes().await?)?.role_name;
 
             Ok(collab_role.into())
         }
