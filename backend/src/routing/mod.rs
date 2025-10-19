@@ -16,7 +16,7 @@ use crate::env::EnvVars;
 mod handlers;
 mod middleware;
 
-/// Returns the Axum router for IQPS
+/// Returns the Axum router for maintos
 pub fn get_router(env_vars: &EnvVars, docker: Arc<Docker>) -> axum::Router {
     let state = Arc::new(RouterState {
         env_vars: env_vars.clone(),

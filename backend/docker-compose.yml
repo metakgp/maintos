@@ -1,5 +1,5 @@
 services:
-  iqps-backend:
+  maintos-backend:
     image: metakgporg/maintos-backend
     container_name: maintos-backend
     build: .
