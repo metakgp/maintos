@@ -78,9 +78,12 @@ pub async fn profile(Extension(auth): Extension<Auth>) -> HandlerReturn<ProfileR
 }
 
 /// Returns a list of all deployments
-pub async fn deployments(State(state): HandlerState) -> HandlerReturn<Vec<Deployment>> {
+pub async fn deployments(
+    State(state): HandlerState,
+    Extension(auth): Extension<Auth>,
+) -> HandlerReturn<Vec<Deployment>> {
     Ok(BackendResponse::ok(
         "Successfully fetched deployments".into(),
-        get_deployments(&state.env_vars).await?,
+        get_deployments(&state.env_vars, &auth.username).await?,
     ))
 }

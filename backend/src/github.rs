@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{Ok, anyhow};
 use http::StatusCode;
 use reqwest::Client;
 use serde::Deserialize;
@@ -35,8 +35,10 @@ pub async fn get_access_token(
         return Err(anyhow!("Github API response error."));
     }
 
-    let access_token =
-        serde_json::from_slice::<GithubAccessTokenResponse>(&response.bytes().await?)?.access_token;
+    let access_token = response
+        .json::<GithubAccessTokenResponse>()
+        .await?
+        .access_token;
 
     Ok(access_token)
 }
@@ -63,7 +65,7 @@ pub async fn get_username(client: &Client, access_token: &str) -> Res<String> {
         return Err(anyhow!("Github API response error."));
     }
 
-    let username = serde_json::from_slice::<GithubUserResponse>(&response.bytes().await?)?.login;
+    let username = response.json::<GithubUserResponse>().await?.login;
     Ok(username)
 }
 
@@ -71,7 +73,7 @@ pub async fn get_username(client: &Client, access_token: &str) -> Res<String> {
 pub async fn admin_gh_request(
     client: &Client,
     admin_token: &str,
-    path: &str,
+    path: String,
 ) -> Result<reqwest::Response, reqwest::Error> {
     client
         .get(format!("https://api.github.com/{path}",))
@@ -90,7 +92,7 @@ pub async fn check_membership(
     let response = admin_gh_request(
         client,
         admin_token,
-        &format!("orgs/{}/members/{}", org, username),
+        format!("orgs/{}/members/{}", org, username),
     )
     .await?;
 
@@ -107,6 +109,43 @@ pub async fn check_membership(
                 response.text().await?
             );
             Err(anyhow!("Github API response error."))
+        }
+    }
+}
+
+#[derive(Deserialize)]
+struct GithubCollabResponse {
+    role_name: String,
+}
+
+// See https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#get-repository-permissions-for-a-user
+pub async fn get_collaborator_role(
+    client: &Client,
+    admin_token: &str,
+    org: &str,
+    repo: &str,
+    username: &str,
+) -> Res<Option<String>> {
+    let response = admin_gh_request(
+        client,
+        admin_token,
+        format!("repos/{org}/{repo}/collaborators/{username}/permission"),
+    )
+    .await?;
+
+    match response.status() {
+        StatusCode::OK => {
+            let collab_role = response.json::<GithubCollabResponse>().await?.role_name;
+
+            Ok(collab_role.into())
+        }
+        StatusCode::NOT_FOUND => Ok(None),
+        _ => {
+            tracing::error!(
+                "Error fetching {username}'s collaborator role on {org}/{repo}: {}",
+                response.text().await?
+            );
+            Err(anyhow!("Error fetching {username}'s collaborator role."))
         }
     }
 }
