@@ -5,6 +5,7 @@ WORKDIR /src
 # Install dependencies
 RUN apt-get update
 RUN apt-get install -y build-essential musl-dev musl-tools
+RUN rustup target add x86_64-unknown-linux-musl
 
 # Copy all files
 COPY src/ ./src
@@ -12,7 +13,6 @@ COPY metaploy/ ./metaploy
 COPY Cargo.toml Cargo.lock .
 
 # For static build
-RUN rustup target add x86_64-unknown-linux-musl
 RUN cargo build --target=x86_64-unknown-linux-musl --release
 
 FROM alpine:latest AS app
