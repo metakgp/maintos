@@ -8,6 +8,7 @@ use crate::utils::Res;
 
 mod auth;
 mod env;
+mod github;
 mod routing;
 mod utils;
 

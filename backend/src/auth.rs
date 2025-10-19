@@ -3,12 +3,10 @@
 //! Currently this is only used in the admin dashboard and uses Github OAuth for authentication
 
 use anyhow::anyhow;
-use http::StatusCode;
 use jwt::{Claims, RegisteredClaims, SignWithKey, VerifyWithKey};
-use serde::Deserialize;
 use std::collections::BTreeMap;
 
-use crate::{env::EnvVars, utils::Res};
+use crate::{env::EnvVars, github, utils::Res};
 
 #[derive(Clone)]
 /// Struct containing the auth information of a user
@@ -74,92 +72,41 @@ async fn generate_token(username: &str, env_vars: &EnvVars) -> Res<String> {
     Ok(claims.sign_with_key(&jwt_key)?)
 }
 
-#[derive(Deserialize)]
-struct GithubAccessTokenResponse {
-    access_token: String,
-}
-
-#[derive(Deserialize)]
-struct GithubUserResponse {
-    login: String,
-}
-
 /// Takes a Github OAuth code and creates a JWT authentication token for the user
 /// 1. Uses the OAuth code to get an access token.
 /// 2. Uses the access token to get the user's username.
 /// 3. Uses the username and an admin's access token to verify whether the user is a member of the admins github team, or the admin themselves.
 ///
 /// Returns the JWT if the user is authenticated, `None` otherwise.
-pub async fn authenticate_user(code: &String, env_vars: &EnvVars) -> Res<Option<String>> {
+pub async fn authenticate_user(code: &str, env_vars: &EnvVars) -> Res<Option<String>> {
     let client = reqwest::Client::new();
 
     // Get the access token for authenticating other endpoints
-    let response = client
-        .get(format!(
-            "https://github.com/login/oauth/access_token?client_id={}&client_secret={}&code={}",
-            env_vars.gh_client_id, env_vars.gh_client_secret, code
-        ))
-        .header("Accept", "application/json")
-        .send()
-        .await?;
-
-    if response.status() != StatusCode::OK {
-        tracing::error!(
-            "Github OAuth error getting access token: {}",
-            response.text().await?
-        );
-        return Err(anyhow!("Github API response error."));
-    }
-
-    let access_token =
-        serde_json::from_slice::<GithubAccessTokenResponse>(&response.bytes().await?)?.access_token;
+    let access_token = github::get_access_token(
+        &client,
+        &env_vars.gh_client_id,
+        &env_vars.gh_client_secret,
+        code,
+    )
+    .await?;
 
     // Get the username of the user who made the request
-    let response = client
-        .get("https://api.github.com/user")
-        .header("Authorization", format!("Bearer {access_token}"))
-        .header("User-Agent", "bruh") // Why is this required :ded:
-        .send()
-        .await?;
-
-    if response.status() != StatusCode::OK {
-        tracing::error!(
-            "Github OAuth error getting username: {}",
-            response.text().await?
-        );
-
-        return Err(anyhow!("Github API response error."));
-    }
-
-    let username = serde_json::from_slice::<GithubUserResponse>(&response.bytes().await?)?.login;
+    let username = github::get_username(&client, &access_token).await?;
 
     // Check the user's membership in the github org
-    let response = client
-        .get(format!(
-            "https://api.github.com/orgs/{}/members/{}",
-            env_vars.gh_org_name, username
-        ))
-        .header(
-            "Authorization",
-            format!("Bearer {}", env_vars.gh_org_admin_token),
-        )
-        .header("User-Agent", "bruh why is this required")
-        .send()
-        .await?;
+    let client = reqwest::Client::new();
 
-    // See API: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#check-organization-membership-for-a-user
-    match response.status().as_u16() {
-        302 => Err(anyhow!(
-            "Error: Github API token is from a non-organization member."
-        )),
-        404 => Ok(None),
-        204 => Ok(Some(generate_token(&username, env_vars).await?)),
-        code => {
-            tracing::error!(
-                "Error getting org membership data ({code}): {}",
-                response.text().await?
-            );
-            Err(anyhow!("Github API response error."))
-        }
+    let is_member = github::check_membership(
+        &client,
+        &env_vars.gh_org_admin_token,
+        &env_vars.gh_org_name,
+        &username,
+    )
+    .await?;
+
+    if is_member {
+        Ok(Some(generate_token(&username, env_vars).await?))
+    } else {
+        Ok(None)
     }
 }

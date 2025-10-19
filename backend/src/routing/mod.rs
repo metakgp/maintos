@@ -2,11 +2,7 @@
 
 use std::sync::Arc;
 
-use axum::{
-    extract::{DefaultBodyLimit, Json},
-    http::StatusCode,
-    response::IntoResponse,
-};
+use axum::{extract::Json, http::StatusCode, response::IntoResponse};
 use bollard::Docker;
 use http::{HeaderValue, Method};
 use serde::Serialize;

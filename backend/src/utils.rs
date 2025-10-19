@@ -22,23 +22,23 @@ pub async fn get_deployments(env_vars: &EnvVars) -> Res<Vec<Deployment>> {
 
     let mut dir_iter = fs::read_dir(deployments_dir).await?;
     while let Some(path) = dir_iter.next_entry().await? {
-        if path.file_type().await?.is_dir() {
-            if let Ok(repo) = Repository::open(path.path()) {
-                let name = path
-                    .file_name()
-                    .into_string()
-                    .map_err(|err| anyhow!("{}", err.display()))?;
+        if path.file_type().await?.is_dir()
+            && let Ok(repo) = Repository::open(path.path())
+        {
+            let name = path
+                .file_name()
+                .into_string()
+                .map_err(|err| anyhow!("{}", err.display()))?;
 
-                let repo_url = repo
-                    .find_remote("origin")?
-                    .url()
-                    .ok_or(anyhow!(
-                        "Error: Origin remote URL not found for repo {name}."
-                    ))?
-                    .to_string();
+            let repo_url = repo
+                .find_remote("origin")?
+                .url()
+                .ok_or(anyhow!(
+                    "Error: Origin remote URL not found for repo {name}."
+                ))?
+                .to_string();
 
-                deployments.push(Deployment { name, repo_url });
-            }
+            deployments.push(Deployment { name, repo_url });
         }
     }
 
