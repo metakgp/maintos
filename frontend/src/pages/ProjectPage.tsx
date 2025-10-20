@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Header } from "../components/Common/Common";
-import { OAUTH_LOGIN_URL, useAuthContext } from "../utils/auth";
+import { useAuthContext } from "../utils/auth";
 import ProjectInfo from "../components/ProjectInfo/ProjectInfo";
 import { useParams } from "react-router-dom";
 
