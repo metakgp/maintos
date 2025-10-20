@@ -41,3 +41,20 @@
 		}
 	}
 }
+
+.icon-button {
+	background: $accent-color;
+	border-radius: 5px;
+	border: none;
+	padding: 0.3rem;
+	width: 1.8rem;
+	height: 1.8rem;
+	cursor: pointer;
+	color: $fg-color;
+
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+	&:hover {
+		background: $accent-color-darker;
+	}
+}

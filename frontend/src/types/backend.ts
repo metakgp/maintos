@@ -38,4 +38,13 @@ export interface IEndpointTypes {
 			repo_url: string;
 		}[];
 	};
+	get_env: {
+		request: {
+			project_name: string;
+		}
+		response: {
+			key: string;
+			value: string;
+		}[];
+	}
 }

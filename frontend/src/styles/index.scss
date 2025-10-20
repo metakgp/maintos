@@ -5,7 +5,7 @@
 
 body {
 	display: flex;
-	font-family: "Hanken Grotesk", sans-serif;
+	font-family: $font-sans;
 
 	color: $fg-color;
 	background-color: $bg-color;
@@ -67,7 +67,7 @@ select,
 	border: 1px solid rgba($fg-color, 0.5);
 	border-radius: 5px;
 	box-sizing: border-box;
-	font-family: "Hanken Grotesk", sans-serif;
+	font-family: $font-sans;
 	font-size: 1rem;
 
 	background-color: $surface-1;

@@ -12,7 +12,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::auth::{self, Auth};
-use crate::utils::{Deployment, get_deployments};
+use crate::utils::{Deployment, ProjectEnvVar, get_deployments, get_env};
 
 use super::{AppError, BackendResponse, RouterState};
 
@@ -86,4 +86,30 @@ pub async fn deployments(
         "Successfully fetched deployments".into(),
         get_deployments(&state.env_vars, &auth.username).await?,
     ))
+}
+
+#[derive(Deserialize)]
+/// The request format for the get environment variables endpoint
+pub struct EnvVarsReq {
+    project_name: String,
+}
+
+/// Gets the environment variables for a project if the user has access to it
+pub async fn get_env_vars(
+    State(state): HandlerState,
+    Extension(auth): Extension<Auth>,
+    Json(body): Json<EnvVarsReq>,
+) -> HandlerReturn<Vec<ProjectEnvVar>> {
+    let project_name = body.project_name.as_str();
+    if let Ok(env_vars) = get_env(&state.env_vars, &auth.username, project_name).await {
+        return Ok(BackendResponse::ok(
+            "Successfully fetched environment variables.".into(),
+            env_vars,
+        ));
+    } else {
+        return Ok(BackendResponse::error(
+            "Error: Project not found or access denied.".into(),
+            StatusCode::NOT_FOUND,
+        ));
+    }
 }

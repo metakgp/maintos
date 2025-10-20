@@ -1,0 +1,40 @@
+@use "../../styles/variables" as *;
+
+.project-info-container {
+	margin: 0 5rem;
+
+	display: flex;
+	flex-direction: column;
+	justify-items: center;
+
+    .env-vars-table {
+        border-collapse: collapse;
+        width: 100%;
+
+        th, td {
+            // border: 1px solid $surface-3;
+            padding: 0.5rem 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: $surface-3;
+        }
+
+        tr:nth-child(even) {
+            background-color: $surface-1;
+        }
+
+        tr:nth-child(odd) {
+            background-color: $surface-2;
+        }
+
+        td:last-child {
+            text-align: right;
+        }
+
+        td {
+            font-family: $font-mono;
+        }
+    }
+}
