@@ -68,10 +68,10 @@ _Maintos_ is a maintainer's dashboard which gives maintainers access to informat
    - For the backend to run, Docker must be installed and running.
    - Run the backend:
       ```bash
-        cargo run
+      cargo run
       ```
 3. Frontend:
-    - Set the environment variables in `.env`:
+    - Set the environment variables in `.env.local`:
       - `VITE_BACKEND_URL`: URL of the backend
       - `VITE_GH_OAUTH_CLIENT_ID`: Client ID of the GitHub OAuth App.
     - Run the frontend:
