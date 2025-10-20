@@ -52,16 +52,47 @@
 ## About The Project
 <div align="center">
   <a href="https://github.com/metakgp/maintos">
-    <img width="80%" alt="image" src="https://user-images.githubusercontent.com/86282911/206632547-a3b34b47-e7ae-4186-a1e6-ecda7ddb38e6.png">
+    <img width="80%" alt="image" src="https://gist.github.com/user-attachments/assets/e5f7e679-b7d4-413f-a874-2de638461780">
   </a>
 </div>
 
-_Detailed explaination of the project goes here_
+_Maintos_ is a maintainer's dashboard which gives maintainers access to information and control on their projects, without requiring explicit access to the server. Maintainers of a project can start/stop the running containers/services, read logs for the project, as well as see and update environment variables.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Development
-[WIP]
+
+1. Clone this repository.
+2. Backend:
+   - Copy `.env.template` to `.env` and update the values as per [Environment Variables](#environment-variables).
+   - For the backend to run, Docker must be installed and running.
+   - Run the backend:
+      ```bash
+        cargo run
+      ```
+3. Frontend:
+    - Set the environment variables in `.env`:
+      - `VITE_BACKEND_URL`: URL of the backend
+      - `VITE_GH_OAUTH_CLIENT_ID`: Client ID of the GitHub OAuth App.
+    - Run the frontend:
+      ```bash
+      npm install
+      npm run dev
+      ```
+
+
+### Environment Variables
+
+This project needs a [GitHub OAuth app](https://github.com/settings/developers) and a [Personal Access Token](https://github.com/settings/personal-access-tokens) of an admin of the GitHub org.
+
+- `GH_CLIENT_ID`, `GH_CLIENT_SECRET`: Client ID and Client Secret for the GitHub OAuth application.
+- `GH_ORG_NAME`: Name of the GitHub organisation
+- `GH_ORG_ADMIN_TOKEN`: A GitHub PAT of an org admin
+- `JWT_SECRET`: A secure string (for signing JWTs)
+- `DEPLOYMENTS_DIR`: Absolute path to directory containing all the project git repos (deployed)
+- `SERVER_PORT`: Port where the backend server listens to
+- `CORS_ALLOWED_ORIGINS`: Frontend URLs
+
 
 ## Deployment
 [WIP]
@@ -98,12 +129,12 @@ See https://wiki.metakgp.org/w/Metakgp:Project_Maintainer.
 - [Harsh Khandeparkar](https://github.com/harshkhandeparkar)
 - [Devansh Gupta](https://github.com/Devansh-bit)
 
-### Past Maintainer(s)
+<!-- ### Past Maintainer(s)
 
 Previous maintainer(s) of this project.
 See https://wiki.metakgp.org/w/Metakgp:Project_Maintainer.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+<p align="right">(<a href="#top">back to top</a>)</p> -->
 
 ## Additional documentation
 
