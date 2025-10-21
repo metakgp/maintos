@@ -26,6 +26,7 @@ pub fn get_router(env_vars: &EnvVars, docker: Arc<Docker>) -> axum::Router {
     axum::Router::new()
         .route("/profile", axum::routing::get(handlers::profile))
         .route("/deployments", axum::routing::get(handlers::deployments))
+        .route("/get_env", axum::routing::post(handlers::get_env_vars))
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::verify_jwt_middleware,

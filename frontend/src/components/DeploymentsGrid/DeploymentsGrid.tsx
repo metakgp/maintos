@@ -3,6 +3,7 @@ import "./deployments_grid.scss";
 import { useAuthContext } from "../../utils/auth";
 import type { IEndpointTypes } from "../../types/backend";
 import { makeRequest } from "../../utils/backend";
+import { Link } from "react-router-dom";
 
 function DeploymentsGrid() {
 	const auth = useAuthContext();
@@ -35,7 +36,7 @@ function DeploymentsGrid() {
 				{
 					deployments.map(
 						(deployment) => <div className="deployment-card">
-							<a href={deployment.repo_url}>{deployment.name}</a>
+							<Link to={`p/${deployment.name}`}>{deployment.name}</Link>
 						</div>
 					)
 				}

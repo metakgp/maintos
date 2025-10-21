@@ -1,0 +1,51 @@
+@use "../../styles/variables" as *;
+
+.project-info-container {
+	margin: 0 auto;
+    width: calc(min(1000px, 90%));
+
+	display: flex;
+	flex-direction: column;
+	justify-items: center;
+
+    .env-vars-table {
+        border-collapse: collapse;
+        width: 100%;
+        table-layout: fixed;
+
+
+        th, td {
+            padding: 0.5rem 1rem;
+            text-align: left;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: pre;
+        }
+
+        th {
+            background-color: $surface-3;
+        }
+
+        tr:nth-child(even) {
+            background-color: $surface-1;
+        }
+
+        tr:nth-child(odd) {
+            background-color: $surface-2;
+        }
+
+        th:last-child {
+            width: 100px;
+        }
+
+        td:last-child {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        td {
+            font-family: $font-mono;
+        }
+    }
+}
