@@ -105,7 +105,7 @@ pub async fn get_env_vars(
     if let Ok(env_vars) = get_env(&state.env_vars, &auth.username, project_name).await {
         return Ok(BackendResponse::ok(
             "Successfully fetched environment variables.".into(),
-            json!(env_vars),
+            env_vars,
         ));
     } else {
         return Ok(BackendResponse::error(

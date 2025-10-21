@@ -1,9 +1,10 @@
-use std::{collections::HashMap, path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr};
 
 use anyhow::anyhow;
 use git2::Repository;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use tokio::fs;
 
 use crate::{env::EnvVars, github};
@@ -117,7 +118,7 @@ pub async fn get_project_settings(env_vars: &EnvVars, project_name: &str) -> Res
 }
 
 /// Get the environment variables for a project
-pub async fn get_env(env_vars: &EnvVars, username: &str, project_name: &str) -> Res<HashMap<String, String>> {
+pub async fn get_env(env_vars: &EnvVars, username: &str, project_name: &str) -> Res<Value> {
     check_access(env_vars, username, project_name).await?;
 
     let project_settings = get_project_settings(env_vars, project_name).await?;
@@ -127,8 +128,11 @@ pub async fn get_env(env_vars: &EnvVars, username: &str, project_name: &str) -> 
         .join(&project_settings.deploy_dir)
         .join(".env");
 
-    let map = dotenvy::from_path_iter(&env_file_path)?
-        .collect::<Result<_, _>>()?;
+    let mut map = Map::new();
+    for item in dotenvy::from_path_iter(env_file_path)? {
+        let (key, value) = item?;
+        map.insert(key, Value::String(value));
+    }
 
-    Ok(map)
+    Ok(Value::Object(map))
 }
