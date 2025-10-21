@@ -42,9 +42,6 @@ export interface IEndpointTypes {
 		request: {
 			project_name: string;
 		}
-		response: {
-			key: string;
-			value: string;
-		}[];
+		response: Record<string, string>
 	}
 }

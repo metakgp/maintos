@@ -1,4 +1,4 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{collections::HashMap, path::PathBuf, str::FromStr};
 
 use anyhow::anyhow;
 use git2::Repository;
@@ -116,15 +116,8 @@ pub async fn get_project_settings(env_vars: &EnvVars, project_name: &str) -> Res
     }
 }
 
-#[derive(Deserialize, Serialize)]
-/// A single environment variable for a project
-pub struct ProjectEnvVar {
-    pub key: String,
-    pub value: String,
-}
-
 /// Get the environment variables for a project
-pub async fn get_env(env_vars: &EnvVars, username: &str, project_name: &str) -> Res<Vec<ProjectEnvVar>> {
+pub async fn get_env(env_vars: &EnvVars, username: &str, project_name: &str) -> Res<HashMap<String, String>> {
     check_access(env_vars, username, project_name).await?;
 
     let project_settings = get_project_settings(env_vars, project_name).await?;
@@ -134,16 +127,8 @@ pub async fn get_env(env_vars: &EnvVars, username: &str, project_name: &str) -> 
         .join(&project_settings.deploy_dir)
         .join(".env");
 
-    let env_file_contents = fs::read_to_string(env_file_path).await?;
-    let mut project_env_vars = Vec::new();
-    for line in env_file_contents.lines() {
-        // TODO: improve parsing
-        if let Some((key, value)) = line.split_once('=') {
-            project_env_vars.push(ProjectEnvVar {
-                key: key.to_string(),
-                value: value.to_string(),
-            });
-        }
-    }
-    Ok(project_env_vars)
+    let map = dotenvy::from_path_iter(&env_file_path)?
+        .collect::<Result<_, _>>()?;
+
+    Ok(map)
 }

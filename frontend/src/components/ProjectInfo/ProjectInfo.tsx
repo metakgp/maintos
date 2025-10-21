@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useAuthContext } from "../../utils/auth";
-import type { IEndpointTypes } from "../../types/backend";
 import { makeRequest } from "../../utils/backend";
 import "./project_info.scss";
 import { FaCopy, FaEye, FaEyeSlash } from "react-icons/fa6";
@@ -8,7 +7,7 @@ import { FaCopy, FaEye, FaEyeSlash } from "react-icons/fa6";
 function ProjectInfo({ projectName }: { projectName?: string }) {
     const auth = useAuthContext();
     const [envVars, setEnvVars] = useState<
-        IEndpointTypes["get_env"]["response"]
+        { key: string; value: string }[]
     >([]);
     const [message, setMessage] = useState<string>("");
     const [visible, setVisible] = useState<boolean[]>([]);
@@ -21,8 +20,8 @@ function ProjectInfo({ projectName }: { projectName?: string }) {
         const resp = await makeRequest("get_env", "post", { project_name: projectName }, auth.jwt);
 
         if (resp.status == "success") {
-            setEnvVars(resp.data);
-            setVisible(new Array(resp.data.length).fill(false));
+            setEnvVars(Object.keys(resp.data).map((key) => ({ key, value: resp.data[key] })));
+            setVisible(new Array(Object.keys(resp.data).length).fill(false));
             setMessage("");
         } else {
             setMessage(`Error fetching environment variables (${resp.status_code}): ${resp.message}`);

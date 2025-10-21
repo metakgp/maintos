@@ -10,9 +10,10 @@ use axum::extract::State;
 use axum::{Extension, extract::Json, http::StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::{json, Value};
 
 use crate::auth::{self, Auth};
-use crate::utils::{Deployment, ProjectEnvVar, get_deployments, get_env};
+use crate::utils::{Deployment, get_deployments, get_env};
 
 use super::{AppError, BackendResponse, RouterState};
 
@@ -99,12 +100,12 @@ pub async fn get_env_vars(
     State(state): HandlerState,
     Extension(auth): Extension<Auth>,
     Json(body): Json<EnvVarsReq>,
-) -> HandlerReturn<Vec<ProjectEnvVar>> {
+) -> HandlerReturn<Value> {
     let project_name = body.project_name.as_str();
     if let Ok(env_vars) = get_env(&state.env_vars, &auth.username, project_name).await {
         return Ok(BackendResponse::ok(
             "Successfully fetched environment variables.".into(),
-            env_vars,
+            json!(env_vars),
         ));
     } else {
         return Ok(BackendResponse::error(

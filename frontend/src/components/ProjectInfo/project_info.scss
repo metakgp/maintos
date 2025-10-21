@@ -2,7 +2,7 @@
 
 .project-info-container {
 	margin: 0 auto;
-    max-width: 1000px;
+    width: calc(min(1000px, 90%));
 
 	display: flex;
 	flex-direction: column;
