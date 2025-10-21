@@ -3,7 +3,7 @@ import { useAuthContext } from "../../utils/auth";
 import type { IEndpointTypes } from "../../types/backend";
 import { makeRequest } from "../../utils/backend";
 import "./project_info.scss";
-import { FaCopy } from "react-icons/fa6";
+import { FaCopy, FaEye, FaEyeSlash } from "react-icons/fa6";
 
 function ProjectInfo({ projectName }: { projectName?: string }) {
     const auth = useAuthContext();
@@ -11,6 +11,7 @@ function ProjectInfo({ projectName }: { projectName?: string }) {
         IEndpointTypes["get_env"]["response"]
     >([]);
     const [message, setMessage] = useState<string>("");
+    const [visible, setVisible] = useState<boolean[]>([]);
 
     const fetchEnvVars = async () => {
         if (!projectName) {
@@ -21,6 +22,7 @@ function ProjectInfo({ projectName }: { projectName?: string }) {
 
         if (resp.status == "success") {
             setEnvVars(resp.data);
+            setVisible(new Array(resp.data.length).fill(false));
             setMessage("");
         } else {
             setMessage(`Error fetching environment variables (${resp.status_code}): ${resp.message}`);
@@ -47,11 +49,21 @@ function ProjectInfo({ projectName }: { projectName?: string }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {envVars.map((envVar) => (
+                        {envVars.map((envVar, i) => (
                             <tr key={envVar.key}>
                                 <td>{envVar.key}</td>
-                                <td>{envVar.value}</td>
+                                <td>{visible[i] ? envVar.value : "********"}</td>
                                 <td>
+                                    <button
+                                        className="icon-button"
+                                        onClick={() => {
+                                            const newVisible = [...visible];
+                                            newVisible[i] = !newVisible[i];
+                                            setVisible(newVisible);
+                                        }}
+                                    >
+                                        {visible[i] ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                                    </button>
                                     <button
                                         className="icon-button"
                                         onClick={() => {

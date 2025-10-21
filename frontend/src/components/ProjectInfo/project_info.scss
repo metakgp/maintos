@@ -1,7 +1,8 @@
 @use "../../styles/variables" as *;
 
 .project-info-container {
-	margin: 0 5rem;
+	margin: 0 auto;
+    max-width: 1000px;
 
 	display: flex;
 	flex-direction: column;
@@ -10,10 +11,15 @@
     .env-vars-table {
         border-collapse: collapse;
         width: 100%;
+        table-layout: fixed;
+
 
         th, td {
             padding: 0.5rem 1rem;
             text-align: left;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: pre;
         }
 
         th {
@@ -28,8 +34,14 @@
             background-color: $surface-2;
         }
 
+        th:last-child {
+            width: 100px;
+        }
+
         td:last-child {
-            text-align: right;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
         }
 
         td {
