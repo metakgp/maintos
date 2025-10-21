@@ -10,7 +10,7 @@ use axum::extract::State;
 use axum::{Extension, extract::Json, http::StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use crate::auth::{self, Auth};
 use crate::utils::{Deployment, get_deployments, get_env};
