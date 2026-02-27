@@ -98,7 +98,7 @@ impl Deployment {
     /// Get the environment variables for a project
     pub async fn get_env(&self) -> Res<Option<Map<String, Value>>> {
         self.settings
-            .env_file
+            .env_path
             .as_ref()
             .map(|env_path| {
                 // Ideally the env_path should exist as it is checked while parsing. If it doesn't the dotenv parse function should catch that error.
@@ -116,7 +116,7 @@ impl Deployment {
 
     /// Get a list of all containers in the deployment
     pub async fn get_containers(&self, docker: &Docker) -> Res<Vec<ContainerSummary>> {
-        let compose_file_path = self.settings.compose_file.as_path();
+        let compose_file_path = self.settings.compose_file_path.as_path();
 
         let mut filter = HashMap::new();
         filter.insert(
@@ -181,9 +181,9 @@ impl Deployment {
 /// Settings for a deployment
 pub struct DeploymentSettings {
     /// Path to the compose file
-    pub compose_file: PathBuf,
+    pub compose_file_path: PathBuf,
     /// Path to the environment variables file
-    pub env_file: Option<PathBuf>,
+    pub env_path: Option<PathBuf>,
 }
 
 impl DeploymentSettings {
@@ -197,13 +197,13 @@ impl DeploymentSettings {
 
         let deploy_dir = Self::resolve_deploy_dir(deployment_path, &raw_settings)?;
         let compose_file = Self::resolve_compose_file(&deploy_dir, &raw_settings)?;
-        let compose_file = compose_file.canonicalize()?;
+        let compose_file_path = compose_file.canonicalize()?;
         let env_file = Self::resolve_env_file(&deploy_dir, &raw_settings);
-        let env_file = env_file.map(|path| path.canonicalize()).transpose()?;
+        let env_path = env_file.map(|path| path.canonicalize()).transpose()?;
 
         Ok(Self {
-            compose_file,
-            env_file,
+            compose_file_path,
+            env_path,
         })
     }
 

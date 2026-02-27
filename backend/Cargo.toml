@@ -21,3 +21,4 @@ anyhow = "1.0.100"
 git2 = { version = "0.20.2", features = ["vendored-openssl"] }
 jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
 toml = "1.0.3"
+envfile = "0.2.1"
