@@ -114,63 +114,64 @@ pub async fn update_env(
 ) -> HandlerReturn<()> {
     let env_path = deployment.settings.env_path;
 
-    if let Some(env_path) = env_path {
-        let env_path = env_path.as_path();
-
-        let env_dir = env_path.parent().ok_or(anyhow!(
-            "Error: Error getting parent directory of the env file."
-        ))?;
-
-        // Take a backup of the env file
-        let backup_env_path = env_dir.join(".env.bak");
-        let copy_result = fs::copy(env_path, backup_env_path.as_path()).await;
-        if copy_result.is_err() {
-            return Ok(BackendResponse::error(
-                "Error copying .env file to the backup file `.env.bak`".into(),
-                StatusCode::INTERNAL_SERVER_ERROR,
-            ));
-        }
-
-        // Read the existing env file
-        let mut env_file = EnvFile::new(env_path)?;
-
-        // Update the values (in memory, not on disk)
-        for (key, value) in updates {
-            env_file.update(&key, &value);
-        }
-
-        // Attempt to write the updated env vars to disk
-        if let Err(error) = env_file.write() {
-            // Restore backup if failed
-            let copy_result = fs::copy(backup_env_path.as_path(), env_path).await;
-
-            if let Err(cp_error) = copy_result {
-                Ok(BackendResponse::error(
-                    format!(
-                        "Failed to write updated env file to the disk and FAILED to restore the backup file.\nWrite error: {error}.\nBackup restore error: {cp_error}."
-                    ),
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                ))
-            } else {
-                Ok(BackendResponse::error(
-                    format!(
-                        "Failed to write updated env file to the disk and restored the backup file.\nError: {error}."
-                    ),
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                ))
-            }
-        } else {
-            Ok(BackendResponse::ok(
-                "Successfully updated the env file.".into(),
-                (),
-            ))
-        }
+    let env_path = if let Some(env_path) = env_path {
+        env_path
     } else {
-        Ok(BackendResponse::error(
+        return Ok(BackendResponse::error(
             "Error: No .env file found.".into(),
             StatusCode::BAD_REQUEST,
-        ))
+        ));
+    };
+
+    let env_path = env_path.as_path();
+    let env_dir = env_path.parent().ok_or(anyhow!(
+        "Error: Error getting parent directory of the env file."
+    ))?;
+
+    // Take a backup of the env file
+    let backup_env_path = env_dir.join(".env.bak");
+    let copy_result = fs::copy(env_path, backup_env_path.as_path()).await;
+    if copy_result.is_err() {
+        return Ok(BackendResponse::error(
+            "Error copying .env file to the backup file `.env.bak`".into(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ));
     }
+
+    // Read the existing env file
+    let mut env_file = EnvFile::new(env_path)?;
+
+    // Update the values (in memory, not on disk)
+    for (key, value) in updates {
+        env_file.update(&key, &value);
+    }
+
+    // Attempt to write the updated env vars to disk
+    if let Err(error) = env_file.write() {
+        // Restore backup if failed
+        let copy_result = fs::copy(backup_env_path.as_path(), env_path).await;
+
+        return if let Err(cp_error) = copy_result {
+            Ok(BackendResponse::error(
+                format!(
+                    "Failed to write updated env file to the disk and FAILED to restore the backup file.\nWrite error: {error}.\nBackup restore error: {cp_error}."
+                ),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ))
+        } else {
+            Ok(BackendResponse::error(
+                format!(
+                    "Failed to write updated env file to the disk and restored the backup file.\nError: {error}."
+                ),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ))
+        };
+    }
+
+    Ok(BackendResponse::ok(
+        "Successfully updated the env file.".into(),
+        (),
+    ))
 }
 
 /// Gets the status of all containers in a deployment if the user has access to it
