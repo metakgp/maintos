@@ -61,4 +61,18 @@
     .message {
         margin-bottom: 1rem;
     }
+
+
+	& .buttons {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 1rem;
+
+		button {
+			font-size: 1.2rem;
+		}
+	}
 }

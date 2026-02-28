@@ -10,14 +10,17 @@ function DeploymentStatus({ projectName }: { projectName?: string }) {
 
 	const [deploymentStatus, setDeploymentStatus] =
 		useState<IEndpointTypes[`${string}/get_status`]["response"]>();
-	const [message, setMessage] = useState<string>("");
+	const [statusMessage, setStatusMessage] = useState<string>("");
+
+	const [controlMessage, setControlMessage] = useState<string>("");
+    const [disabled, setDisabled] = useState<boolean>(false);
 
 	const fetchDeploymentStatus = async () => {
 		if (!projectName) {
-			setMessage("Project name not found.");
+			setStatusMessage("Project name not found.");
 			return;
 		}
-		setMessage("Fetching deployment status...");
+		setStatusMessage("Fetching deployment status...");
 		const resp = await makeRequest(
 			`${projectName}/get_status`,
 			"post",
@@ -27,9 +30,9 @@ function DeploymentStatus({ projectName }: { projectName?: string }) {
 
 		if (resp.status == "success") {
 			setDeploymentStatus(resp.data);
-			setMessage("");
+			setStatusMessage("");
 		} else {
-			setMessage(
+			setStatusMessage(
 				`Error fetching project status (${resp.status_code}): ${resp.message}`,
 			);
 		}
@@ -40,6 +43,70 @@ function DeploymentStatus({ projectName }: { projectName?: string }) {
 			fetchDeploymentStatus();
 		}
 	}, []);
+
+
+    const start = async () => {
+        if (!projectName) {
+            setControlMessage("Project name not found.");
+            return;
+        }
+		let confirm = window.confirm("Are you sure you want to start the deployment?");
+		if (!confirm) {
+			return;
+		}
+        setControlMessage("Starting deployment...");
+        setDisabled(true);
+        const resp = await makeRequest(
+            `${projectName}/start`,
+            "post",
+            null,
+            auth.jwt,
+        );
+
+        if (resp.status == "success") {
+            setControlMessage("");
+            setDisabled(false);
+			fetchDeploymentStatus();
+        }
+        else {
+            setControlMessage(
+                `Error starting deployment (${resp.status_code}): ${resp.message}`,
+            );
+            setDisabled(false);
+        }
+    };
+
+    const stop = async () => {
+        if (!projectName) {
+            setControlMessage("Project name not found.");
+            return;
+        }
+		let confirm = window.confirm("Are you sure you want to stop the deployment?");
+		if (!confirm) {
+			return;
+		}
+        setControlMessage("Stopping deployment...");
+        setDisabled(true);
+        const resp = await makeRequest(
+            `${projectName}/stop`,
+            "post",
+            null,
+            auth.jwt,
+        );
+
+        if (resp.status == "success") {
+            setControlMessage("");
+            setDisabled(false);
+			fetchDeploymentStatus();
+        }
+        else {
+            setControlMessage(
+                `Error stopping deployment (${resp.status_code}): ${resp.message}`,
+            );
+            setDisabled(false);
+        }
+    };
+
 
 	return (
 		<div className="deployment-status-container">
@@ -53,7 +120,6 @@ function DeploymentStatus({ projectName }: { projectName?: string }) {
 				</button>
 			</div>
 
-			{message && <p className="message">{message}</p>}
 
 			<div className="container-grid">
 				{deploymentStatus &&
@@ -77,6 +143,19 @@ function DeploymentStatus({ projectName }: { projectName?: string }) {
 						</div>
 					))}
 			</div>
+
+			{statusMessage && <p className="message">{statusMessage}</p>}
+
+            {controlMessage && <p className="message">{controlMessage}</p>}
+
+            <div className="buttons">
+                <button className="start-button" onClick={start} disabled={disabled}>
+                    Start
+                </button>
+                <button className="stop-button" onClick={stop} disabled={disabled}>
+                    Stop
+                </button>
+            </div>
 		</div>
 	);
 }

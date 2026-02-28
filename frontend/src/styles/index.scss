@@ -86,6 +86,15 @@ button {
 	&:hover {
 		background-color: $accent-color-darker;
 	}
+
+	&:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+
+		&:hover {
+			background-color: $accent-color;
+		}
+	}
 }
 
 .toast {

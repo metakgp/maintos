@@ -49,4 +49,12 @@ export interface IEndpointTypes {
 			status: string;
 		}[]
 	};
+	[E: `${string}/stop`]: {
+		request: null;
+		response: null;
+	};
+	[E: `${string}/start`]: {
+		request: null;
+		response: null;
+	};
 }

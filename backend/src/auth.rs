@@ -1,6 +1,4 @@
 //! Utils for Github OAuth integration and JWT authentication
-//!
-//! Currently this is only used in the admin dashboard and uses Github OAuth for authentication
 
 use jsonwebtoken::{self, Header, Validation};
 use serde::{Deserialize, Serialize};

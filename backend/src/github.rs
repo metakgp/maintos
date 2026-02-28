@@ -1,3 +1,5 @@
+//! Utils for interacting with the GitHub API
+
 use anyhow::{Ok, anyhow};
 use http::StatusCode;
 use reqwest::Client;
