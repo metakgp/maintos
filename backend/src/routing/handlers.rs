@@ -188,7 +188,6 @@ pub async fn get_status(
 }
 
 pub async fn stop(
-    State(_state): HandlerState,
     Extension(deployment): Extension<Deployment>,
 ) -> HandlerReturn<Value> {
     deployment.down().await?;
@@ -200,7 +199,6 @@ pub async fn stop(
 }
 
 pub async fn start(
-    State(_state): HandlerState,
     Extension(deployment): Extension<Deployment>,
 ) -> HandlerReturn<Value> {
     deployment.up().await?;

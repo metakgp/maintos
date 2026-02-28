@@ -194,7 +194,7 @@ impl Deployment {
 
     /// Stop all containers in a deployment
     pub async fn down(&self) -> Res<()> {
-        let compose_file = self.settings.compose_file.as_path();
+        let compose_file = self.settings.compose_file_path.as_path();
         let compose = Compose::builder()
             .path(compose_file.to_str().unwrap())
             .build()
@@ -207,7 +207,7 @@ impl Deployment {
 
     /// Start all containers in a deployment
     pub async fn up(&self) -> Res<()> {
-        let compose_file = self.settings.compose_file.as_path();
+        let compose_file = self.settings.compose_file_path.as_path();
         let compose = Compose::builder()
             .path(compose_file.to_str().unwrap())
             .build()
