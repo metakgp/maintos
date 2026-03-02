@@ -34,6 +34,10 @@
             background-color: $surface-2;
         }
 
+        tr.updated {
+            background-color: $accent-complementary-darker;
+        }
+
         th:last-child {
             width: 100px;
         }
@@ -47,5 +51,32 @@
         td {
             font-family: $font-mono;
         }
+
+        input {
+            width: 100%;
+            padding: 0.25rem;
+            font-family: $font-mono;
+            margin: 0;
+            border: 1px solid $surface-3;
+            border-radius: 0;
+
+            &:focus {
+                outline: none;
+                border-bottom: 1px solid $accent-color;
+            }
+        }
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0;
+    }
+
+    .actions {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
     }
 }

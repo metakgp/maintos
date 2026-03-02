@@ -56,6 +56,7 @@ export async function makeRequest<E extends keyof IEndpointTypes>(
 ): Promise<BackendResponse<IEndpointTypes[E]["response"]>> {
 	try {
 		const response = await makeBackendRequest(endpoint, method, jwt, params);
+		const clone = response.clone();
 
 		try {
 			return {
@@ -66,7 +67,7 @@ export async function makeRequest<E extends keyof IEndpointTypes>(
 			return {
 				status: "error",
 				status_code: response.status,
-				message: await response.text()
+				message: await clone.text()
 			};
 		}
 	} catch (e) {

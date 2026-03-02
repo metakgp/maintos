@@ -41,6 +41,10 @@ export interface IEndpointTypes {
 		request: null;
 		response: Record<string, string>
 	};
+	[E: `${string}/update_env`]: {
+		request: Record<string, string>;
+		response: null;
+	};
 	[E: `${string}/get_status`]: {
 		request: null;
 		response: {
@@ -54,6 +58,10 @@ export interface IEndpointTypes {
 		response: null;
 	};
 	[E: `${string}/start`]: {
+		request: null;
+		response: null;
+	};
+	[E: `${string}/restart`]: {
 		request: null;
 		response: null;
 	};
