@@ -24,7 +24,6 @@ pub struct Deployment {
     #[serde(skip)]
     /// The parsed `.maint` file
     pub settings: DeploymentSettings,
-
     pub deployment_dir: String,
     pub repo_url: String,
     pub repo_owner: String,

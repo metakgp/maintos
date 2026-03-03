@@ -4,7 +4,7 @@
 //!
 //! The request format is described
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use anyhow::anyhow;
@@ -108,10 +108,11 @@ pub async fn get_env_vars(Extension(deployment): Extension<Deployment>) -> Handl
 }
 
 /// Updates the given key-value pairs in the .env file
+/// Returns the new env vars
 pub async fn update_env(
     Extension(deployment): Extension<Deployment>,
     Json(updates): Json<HashMap<String, String>>,
-) -> HandlerReturn<()> {
+) -> HandlerReturn<BTreeMap<String, String>> {
     let env_path = deployment.settings.env_path;
 
     let env_path = if let Some(env_path) = env_path {
@@ -170,7 +171,7 @@ pub async fn update_env(
 
     Ok(BackendResponse::ok(
         "Successfully updated the env file.".into(),
-        (),
+        env_file.store,
     ))
 }
 

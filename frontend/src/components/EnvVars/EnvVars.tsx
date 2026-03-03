@@ -13,6 +13,7 @@ export default function EnvVars({ projectName }: { projectName?: string }) {
 	const [message, setMessage] = useState<string>("");
 	const [loaded, setLoaded] = useState<boolean>(false);
 	const [updates, setUpdates] = useState<Map<string, string>>(new Map());
+	const [isSaving, setIsSaving] = useState(false);
 
 	const fetchEnvVars = async () => {
 		if (!projectName) {
@@ -46,59 +47,44 @@ export default function EnvVars({ projectName }: { projectName?: string }) {
 	}, []);
 
 	const saveEnvVars = async () => {
-		//     if (!projectName) {
-		//         setMessage("Project name not found.");
-		//         return;
-		//     }
-		//     // check if any changes
-		//     if (editingCopy.every((envVar, i) => envVar.value === envVars[i].value)) {
-		//         setEditing(false);
-		//         return;
-		//     }
-		//     const confirm = window.confirm(
-		//         "Are you sure you want to save the changes to the environment variables?",
-		//     );
-		//     if (!confirm) return;
-		//     const envVarsMap: Record<string, string> = {};
-		//     editingCopy.forEach((envVar, i) => {
-		//         if (envVar.value !== envVars[i].value) { // only save if the value has changed
-		//             envVarsMap[envVar.key] = envVar.value;
-		//         }
-		//     });
-		//     setMessage("Saving environment variables...");
-		//     const resp = await makeRequest(
-		//         `${projectName}/update_env`,
-		//         "post",
-		//         envVarsMap,
-		//         auth.jwt,
-		//     );
-		//     if (resp.status == "success") {
-		//         setEnvVars(editingCopy
-		//             .map((envVar) => ({
-		//                 key: envVar.key,
-		//                 value: envVar.value,
-		//             }))
-		//         );
-		//         setEditing(false);
-		//         setMessage("Restarting deployment to apply changes...");
-		//         const restartResp = await makeRequest(
-		//             `${projectName}/restart`,
-		//             "post",
-		//             null,
-		//             auth.jwt,
-		//         );
-		//         if (restartResp.status == "success") {
-		//             setMessage("Environment variables updated and deployment restarted successfully.");
-		//         } else {
-		//             setMessage(
-		//                 `Environment variables updated, but error restarting deployment (${restartResp.status_code}): ${restartResp.message}`,
-		//             );
-		//         }
-		//     } else {
-		//         setMessage(
-		//             `Error saving environment variables (${resp.status_code}): ${resp.message}`,
-		//         );
-		//     }
+		if (!isSaving) {
+			setIsSaving(true);
+
+			if (!projectName) {
+				setMessage("Project name not found.");
+				setIsSaving(false);
+				return;
+			}
+
+			const confirm = window.confirm(
+				"Are you sure you want to save the changes to the environment variables?",
+			);
+			if (!confirm) {
+				setIsSaving(false);
+				setMessage("");
+				return;
+			}
+			setMessage("Saving environment variables...");
+
+			const resp = await makeRequest(
+				`${projectName}/update_env`,
+				"post",
+				Object.fromEntries(updates),
+				auth.jwt,
+			);
+
+			if (resp.status == "success") {
+				setUpdates(new Map());
+				setEnvVars(resp.data);
+				setMessage("Successfully updated environment variables. RESTART the deplyment to reflect the changes.");
+			} else {
+				setMessage(
+					`Error saving environment variables (${resp.status_code}): ${resp.message}`,
+				);
+			}
+
+			setIsSaving(false);
+		}
 	};
 
 	const updateEnvVar = (key: string, value: string) => {
@@ -128,6 +114,7 @@ export default function EnvVars({ projectName }: { projectName?: string }) {
 							<button
 								className="save-button"
 								onClick={saveEnvVars}
+								disabled={isSaving}
 							>
 								Save
 							</button>
@@ -153,7 +140,7 @@ export default function EnvVars({ projectName }: { projectName?: string }) {
 					<tbody>
 						{
 							Object.entries(envVars).map((env_var) => (
-						<EnvVarRow key={env_var[0]} env_var={env_var} update={updateEnvVar} />
+								<EnvVarRow key={env_var[0]} env_var={env_var} update={updateEnvVar} disabled={isSaving} />
 							))
 						}
 					</tbody>
@@ -167,6 +154,7 @@ function EnvVarRow(
 	props:
 		{
 			env_var: [key: string, value: string],
+			disabled: boolean,
 			update: (key: string, value: string) => void,
 		}
 ) {
@@ -182,6 +170,7 @@ function EnvVarRow(
 			<td>
 				{editing ? (
 					<input
+						disabled={props.disabled}
 						value={liveValue}
 						onChange={(e) => {
 							setLiveValue(e.target.value);
@@ -196,6 +185,7 @@ function EnvVarRow(
 				<button
 					// reset button
 					className="icon-button"
+					disabled={props.disabled}
 					onClick={() => {
 						if (editing) {
 							setEditing(false);
@@ -214,6 +204,7 @@ function EnvVarRow(
 				</button>
 				<button
 					className="icon-button"
+					disabled={props.disabled}
 					onClick={() => setVisible(!visible)}
 				>
 					{visible ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
