@@ -188,9 +188,7 @@ pub async fn get_status(
 }
 
 /// Stops all containers in a deployment if the user has access to it
-pub async fn stop(
-    Extension(deployment): Extension<Deployment>,
-) -> HandlerReturn<Value> {
+pub async fn stop(Extension(deployment): Extension<Deployment>) -> HandlerReturn<Value> {
     deployment.down().await?;
 
     Ok(BackendResponse::ok(
@@ -200,9 +198,7 @@ pub async fn stop(
 }
 
 /// Starts all containers in a deployment if the user has access to it
-pub async fn start(
-    Extension(deployment): Extension<Deployment>,
-) -> HandlerReturn<Value> {
+pub async fn start(Extension(deployment): Extension<Deployment>) -> HandlerReturn<Value> {
     deployment.up().await?;
 
     Ok(BackendResponse::ok(
@@ -212,9 +208,7 @@ pub async fn start(
 }
 
 /// Restarts all containers in a deployment if the user has access to it
-pub async fn restart(
-    Extension(deployment): Extension<Deployment>,
-) -> HandlerReturn<Value> {
+pub async fn restart(Extension(deployment): Extension<Deployment>) -> HandlerReturn<Value> {
     deployment.down().await?;
     deployment.up().await?;
 
