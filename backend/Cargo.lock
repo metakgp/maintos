@@ -1231,6 +1231,7 @@ dependencies = [
  "clap",
  "compose-rs",
  "dotenvy",
+ "futures-util",
  "git2",
  "http",
  "jsonwebtoken",

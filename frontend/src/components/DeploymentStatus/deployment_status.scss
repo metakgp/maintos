@@ -1,67 +1,67 @@
-@use "../../styles/variables" as *;
+@use '../../styles/variables' as *;
 
 .deployment-status-container {
 	margin: 0 auto;
-    width: calc(min(1000px, 90%));
+	width: calc(min(1000px, 90%));
 
 	display: flex;
 	flex-direction: column;
 	justify-items: center;
-    
-    .container-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 1rem;
-    }
 
-    .container-info {
-        background-color: $surface-2;
-        border-radius: 8px;
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        position: relative;
+	.container-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1rem;
+	}
 
-        .container-name {
-            font-weight: bold;
-            font-size: 1.2rem;
-            margin: 0;
-        }
+	.container-info {
+		background-color: $surface-2;
+		border-radius: 8px;
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		position: relative;
 
-        .status-indicator {
-            border-radius: 5pt;
-            padding: 0.2rem 0.5rem;
-            top: -0.5rem;
-            right: 0.5rem;
-            position: absolute;
-            background-color: rgb(96, 96, 96);
+		.container-name {
+			font-weight: bold;
+			font-size: 1.2rem;
+			margin: 0;
+		}
 
-            &.running {
-                background-color: rgb(0, 96, 0);
-            }
+		.status-indicator {
+			border-radius: 5pt;
+			padding: 0.2rem 0.5rem;
+			top: -0.5rem;
+			right: 0.5rem;
+			position: absolute;
+			background-color: rgb(96, 96, 96);
 
-            &.exited {
-                background-color: rgb(154, 0, 0);
-            }
+			&.running {
+				background-color: rgb(0, 96, 0);
+			}
 
-            &.paused, &.restarting {
-                background-color: rgb(136, 136, 0);
-            }
-        }
-    }
+			&.exited {
+				background-color: rgb(154, 0, 0);
+			}
 
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 0;
-    }
+			&.paused,
+			&.restarting {
+				background-color: rgb(136, 136, 0);
+			}
+		}
+	}
 
-    .message {
-        margin-bottom: 1rem;
-    }
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin: 0;
+	}
 
+	.message {
+		margin-bottom: 1rem;
+	}
 
 	& .buttons {
 		display: flex;
@@ -73,6 +73,55 @@
 
 		button {
 			font-size: 1.2rem;
+		}
+	}
+
+	.logs-panel {
+		margin-top: 2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+
+		.header {
+			margin: 0;
+		}
+
+		.logs-controls {
+			display: flex;
+			align-items: center;
+			gap: 1rem;
+		}
+
+		.logs-label {
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+			font-size: 0.95rem;
+		}
+
+		.logs-terminal {
+			background: #0c0e12;
+			color: #d7d7d7;
+			border-radius: 8px;
+			padding: 1rem;
+			min-height: 220px;
+			max-height: 420px;
+			overflow: auto;
+			font-family:
+				'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono',
+				'Courier New', monospace;
+			font-size: 0.9rem;
+			line-height: 1.4;
+			border: 1px solid rgba(255, 255, 255, 0.08);
+		}
+
+		.log-line {
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.logs-placeholder {
+			color: rgba(255, 255, 255, 0.6);
 		}
 	}
 }

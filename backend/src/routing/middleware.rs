@@ -9,6 +9,7 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use http::{HeaderMap, StatusCode};
+use serde::Deserialize;
 
 use crate::{
     auth::{self, Auth},
@@ -55,15 +56,25 @@ pub async fn verify_jwt(
     }
 }
 
+// temporary fix for now (?)
+#[derive(Deserialize)]
+pub struct DeploymentPath {
+    project_name: String,
+    #[allow(unused)]
+    container: Option<String>,
+}
+
 /// Checks if a user has maintainer access to a given deployment (given the user is already _authenticated_)
 /// If the user has access, passes the parsed `Deployment` to the next handler.
 pub async fn parse_deployment(
     State(state): State<Arc<RouterState>>,
     Extension(auth): Extension<Auth>,
-    Path(project_name): Path<String>,
+    Path(path): Path<DeploymentPath>,
     mut request: Request,
     next: Next,
 ) -> Result<Response, AppError> {
+    let project_name = path.project_name;
+    
     let deployment = Deployment::from_deployment_dir(&state.env_vars, &project_name).await?;
     let access = deployment.has_access(&auth).await?;
 

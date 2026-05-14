@@ -57,16 +57,18 @@ export async function makeRequest<E extends keyof IEndpointTypes>(
 	try {
 		const response = await makeBackendRequest(endpoint, method, jwt, params);
 
+		const body = await response.text();
+
 		try {
 			return {
-				...await response.json(),
+				...JSON.parse(body),
 				status_code: response.status
 			}
-		} catch (e) {
+		} catch {
 			return {
 				status: "error",
 				status_code: response.status,
-				message: await response.text()
+				message: body
 			};
 		}
 	} catch (e) {

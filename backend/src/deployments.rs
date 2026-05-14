@@ -7,8 +7,9 @@ use std::{
 };
 
 use anyhow::anyhow;
-use bollard::{Docker, query_parameters::ListContainersOptionsBuilder, secret::ContainerSummary};
+use bollard::{Docker, container::LogOutput, query_parameters::{ListContainersOptionsBuilder, LogsOptions}, secret::ContainerSummary};
 use compose_rs::{Compose, ComposeCommand};
+use futures_util::StreamExt;
 use git2::Repository;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
@@ -216,6 +217,53 @@ impl Deployment {
         compose.up().exec()?;
 
         Ok(())
+    }
+
+    /// Get logs of a container
+    pub async fn get_container_logs(&self, docker: &Docker, container_id: &str) -> Res<Vec<String>> {
+        let options = LogsOptions {
+            follow: false,
+            stdout: true,
+            stderr: true,
+            tail: "50".to_string(),
+            ..Default::default()
+        };
+
+        let mut logs = docker.logs(container_id, Some(options));
+        let mut output : Vec<String> = Vec::new();
+
+        while let Some(log) = logs.next().await {
+            match log? {
+                LogOutput::StdOut { message } => {
+                    output.push(String::from_utf8_lossy(&message).to_string());
+                }
+                LogOutput::StdErr { message } => {
+                    output.push(String::from_utf8_lossy(&message).to_string());
+                }
+                _ => {}
+            }
+        }
+
+        Ok(output)
+    }
+
+    /// Get logs of a container by its compose service name
+    pub async fn get_container_logs_by_service(&self, docker: &Docker, service: &str,) -> Res<Vec<String>> {
+        let containers = self.get_containers(docker).await?;
+
+        let container_id = containers
+            .iter()
+            .find(|container| {
+                container
+                    .labels
+                    .as_ref()
+                    .and_then(|labels| labels.get("com.docker.compose.service"))
+                    .is_some_and(|label_service| label_service == service)
+            })
+            .and_then(|container| container.id.as_deref())
+            .ok_or_else(|| anyhow!("Container not found for service: {}", service))?;
+
+        self.get_container_logs(docker, container_id).await
     }
 }
 

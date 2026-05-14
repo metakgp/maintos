@@ -6,7 +6,7 @@
 
 use std::sync::Arc;
 
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::{Extension, extract::Json, http::StatusCode};
 use serde::Deserialize;
 use serde::Serialize;
@@ -137,5 +137,21 @@ pub async fn start(
     Ok(BackendResponse::ok(
         "Successfully started containers.".into(),
         Value::Null,
+    ))
+}
+
+
+pub async fn get_logs(
+    State(state): HandlerState,
+    Path((_project_name, container)): Path<(String, String)>,
+    Extension(deployment): Extension<Deployment>,
+) -> HandlerReturn<Vec<String>> {
+    let logs = deployment
+        .get_container_logs_by_service(&state.docker, &container)
+        .await?;
+
+    Ok(BackendResponse::ok(
+        "Successfully got logs for container".into(),
+        logs,
     ))
 }
