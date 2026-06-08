@@ -41,10 +41,6 @@ pub fn get_router(env_vars: &EnvVars, docker: Arc<Docker>) -> axum::Router {
             "/{project_name}/start",
             axum::routing::post(handlers::start),
         )
-        .route(
-            "/{project_name}/restart",
-            axum::routing::post(handlers::restart),
-        )
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             middleware::parse_deployment,

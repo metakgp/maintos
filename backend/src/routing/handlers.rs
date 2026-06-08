@@ -207,14 +207,3 @@ pub async fn start(Extension(deployment): Extension<Deployment>) -> HandlerRetur
         Value::Null,
     ))
 }
-
-/// Restarts all containers in a deployment if the user has access to it
-pub async fn restart(Extension(deployment): Extension<Deployment>) -> HandlerReturn<Value> {
-    deployment.down().await?;
-    deployment.up().await?;
-
-    Ok(BackendResponse::ok(
-        "Successfully restarted containers.".into(),
-        Value::Null,
-    ))
-}

@@ -61,8 +61,4 @@ export interface IEndpointTypes {
 		request: null;
 		response: null;
 	};
-	[E: `${string}/restart`]: {
-		request: null;
-		response: null;
-	};
 }
