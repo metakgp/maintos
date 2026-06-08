@@ -25,6 +25,10 @@ pub fn get_router(env_vars: &EnvVars, docker: Arc<Docker>) -> axum::Router {
 
     axum::Router::new()
         .route(
+            "/{project_name}/update_env",
+            axum::routing::post(handlers::update_env),
+        )
+        .route(
             "/{project_name}/get_env",
             axum::routing::post(handlers::get_env_vars),
         )

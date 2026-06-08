@@ -41,6 +41,10 @@ export interface IEndpointTypes {
 		request: null;
 		response: Record<string, string>
 	};
+	[E: `${string}/update_env`]: {
+		request: Record<string, string>;
+		response: Record<string, string>;
+	};
 	[E: `${string}/get_status`]: {
 		request: null;
 		response: {

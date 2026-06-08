@@ -4,13 +4,17 @@
 //!
 //! The request format is described
 
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
+use anyhow::anyhow;
 use axum::extract::State;
 use axum::{Extension, extract::Json, http::StatusCode};
+use envfile::EnvFile;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
+use tokio::fs;
 
 use crate::auth::{self, Auth};
 use crate::{deployments::Deployment, utils::get_deployments};
@@ -103,6 +107,74 @@ pub async fn get_env_vars(Extension(deployment): Extension<Deployment>) -> Handl
     }
 }
 
+/// Updates the given key-value pairs in the .env file
+/// Returns the new env vars
+pub async fn update_env(
+    Extension(deployment): Extension<Deployment>,
+    Json(updates): Json<HashMap<String, String>>,
+) -> HandlerReturn<BTreeMap<String, String>> {
+    let env_path = deployment.settings.env_path;
+
+    let env_path = if let Some(env_path) = env_path {
+        env_path
+    } else {
+        return Ok(BackendResponse::error(
+            "Error: No .env file found.".into(),
+            StatusCode::BAD_REQUEST,
+        ));
+    };
+
+    let env_path = env_path.as_path();
+    let env_dir = env_path.parent().ok_or(anyhow!(
+        "Error: Error getting parent directory of the env file."
+    ))?;
+
+    // Take a backup of the env file
+    let backup_env_path = env_dir.join(".env.bak");
+    let copy_result = fs::copy(env_path, backup_env_path.as_path()).await;
+    if copy_result.is_err() {
+        return Ok(BackendResponse::error(
+            "Error copying .env file to the backup file `.env.bak`".into(),
+            StatusCode::INTERNAL_SERVER_ERROR,
+        ));
+    }
+
+    // Read the existing env file
+    let mut env_file = EnvFile::new(env_path)?;
+
+    // Update the values (in memory, not on disk)
+    for (key, value) in updates {
+        env_file.update(&key, &value);
+    }
+
+    // Attempt to write the updated env vars to disk
+    if let Err(error) = env_file.write() {
+        // Restore backup if failed
+        let copy_result = fs::copy(backup_env_path.as_path(), env_path).await;
+
+        return if let Err(cp_error) = copy_result {
+            Ok(BackendResponse::error(
+                format!(
+                    "Failed to write updated env file to the disk and FAILED to restore the backup file.\nWrite error: {error}.\nBackup restore error: {cp_error}."
+                ),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ))
+        } else {
+            Ok(BackendResponse::error(
+                format!(
+                    "Failed to write updated env file to the disk and restored the backup file.\nError: {error}."
+                ),
+                StatusCode::INTERNAL_SERVER_ERROR,
+            ))
+        };
+    }
+
+    Ok(BackendResponse::ok(
+        "Successfully updated the env file.".into(),
+        env_file.store,
+    ))
+}
+
 /// Gets the status of all containers in a deployment if the user has access to it
 pub async fn get_status(
     State(state): HandlerState,
@@ -116,10 +188,8 @@ pub async fn get_status(
     ))
 }
 
-pub async fn stop(
-    State(_state): HandlerState,
-    Extension(deployment): Extension<Deployment>,
-) -> HandlerReturn<Value> {
+/// Stops all containers in a deployment if the user has access to it
+pub async fn stop(Extension(deployment): Extension<Deployment>) -> HandlerReturn<Value> {
     deployment.down().await?;
 
     Ok(BackendResponse::ok(
@@ -128,10 +198,8 @@ pub async fn stop(
     ))
 }
 
-pub async fn start(
-    State(_state): HandlerState,
-    Extension(deployment): Extension<Deployment>,
-) -> HandlerReturn<Value> {
+/// Starts all containers in a deployment if the user has access to it
+pub async fn start(Extension(deployment): Extension<Deployment>) -> HandlerReturn<Value> {
     deployment.up().await?;
 
     Ok(BackendResponse::ok(
