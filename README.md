@@ -138,16 +138,17 @@ All the fields are optional.
 The currently active maintainer(s) of this project.
 See https://wiki.metakgp.org/w/Metakgp:Project_Maintainer.
 
-- [Harsh Khandeparkar](https://github.com/harshkhandeparkar)
 - [Devansh Gupta](https://github.com/Devansh-bit)
 - [Dipam Sen](https://github.com/dipamsen)
 
-<!-- ### Past Maintainer(s)
+### Past Maintainer(s)
 
 Previous maintainer(s) of this project.
 See https://wiki.metakgp.org/w/Metakgp:Project_Maintainer.
 
-<p align="right">(<a href="#top">back to top</a>)</p> -->
+- [Harsh Khandeparkar](https://github.com/harshkhandeparkar)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 ## Additional documentation
 
